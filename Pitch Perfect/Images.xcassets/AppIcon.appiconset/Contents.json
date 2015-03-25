@@ -31,20 +31,6 @@
       "idiom" : "iphone",
       "filename" : "PitchPerfect_180.png",
       "scale" : "3x"
-    },
-    {
-      "size" : "76x76",
-      "idiom" : "ipad",
-      "filename" : "PitchPerfect_76.png",
-      "unassigned" : true,
-      "scale" : "1x"
-    },
-    {
-      "size" : "76x76",
-      "idiom" : "ipad",
-      "filename" : "PitchPerfect_152.png",
-      "unassigned" : true,
-      "scale" : "2x"
     }
   ],
   "info" : {
