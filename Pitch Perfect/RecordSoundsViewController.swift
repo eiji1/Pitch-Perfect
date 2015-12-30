@@ -48,7 +48,7 @@ final class RecordSoundsViewController: UIViewController , AVAudioRecorderDelega
 	
 	// logging function for debugging
 	private func log(message: AnyObject?, line: Int = __LINE__, function :String = __FUNCTION__) {
-		println("At \(line) in \(function), \(message)")
+		print("At \(line) in \(function), \(message)")
 	}
 	
 	//------------------------------------------------//
@@ -66,8 +66,8 @@ final class RecordSoundsViewController: UIViewController , AVAudioRecorderDelega
 	override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
 		if segue.identifier == SegueOnStopRecording {
 			// pass recorded audio data to the PlaySoundsViewController
-			let playSoundsVC:PlaySoundsViewController = segue.destinationViewController as PlaySoundsViewController
-			let recordedAudioData = sender as RecordedAudio
+			let playSoundsVC:PlaySoundsViewController = segue.destinationViewController as! PlaySoundsViewController
+			let recordedAudioData = sender as! RecordedAudio
 			playSoundsVC.setRecordedAudio(recordedAudioData)
 		}
 	}
@@ -86,8 +86,8 @@ final class RecordSoundsViewController: UIViewController , AVAudioRecorderDelega
 	/**
 	The action from microphone button is recording audio data with microphone device.
 	
-	:param: sender the originaly pushed button
-	:returns: none
+	- parameter sender: the originaly pushed button
+	- returns: none
 	*/
 	@IBAction func recordAudio(sender: UIButton) {
 		// stop and pause/resume button will apper.
@@ -101,8 +101,12 @@ final class RecordSoundsViewController: UIViewController , AVAudioRecorderDelega
 		let filePath = getRecordingFilePath()
 		// setup recorder object
 		let session = AVAudioSession.sharedInstance()
-		session.setCategory(AVAudioSessionCategoryPlayAndRecord, error: nil)
-		audioRecorder = AVAudioRecorder(URL:filePath, settings:nil,error:nil)
+		do {
+			try session.setCategory(AVAudioSessionCategoryPlayAndRecord)
+		} catch _ {
+		}
+		
+		audioRecorder = try? AVAudioRecorder(URL:filePath, settings:[:])
 		audioRecorder.delegate = self
 		audioRecorder.meteringEnabled = true
 		audioRecorder.prepareToRecord()
@@ -114,8 +118,8 @@ final class RecordSoundsViewController: UIViewController , AVAudioRecorderDelega
 	/**
 	Getting sound file path in which recorded data is stored temporarily
 	
-	:param: none
-	:returns: recorded sound file path as url
+	- parameter none:
+	- returns: recorded sound file path as url
 	*/
 	private final func getRecordingFilePath() -> NSURL {
 		// get temp directory
@@ -136,17 +140,20 @@ final class RecordSoundsViewController: UIViewController , AVAudioRecorderDelega
 	/**
 	The action on pressed stop button. The recording process will be stopped.
 	
-	:param: sender The stop button
-	:returns: none
+	- parameter sender: The stop button
+	- returns: none
 	*/
 	@IBAction func stopAudio(sender: UIButton) {
 		// stop audio session
 		let session = AVAudioSession.sharedInstance()
-		session.setActive(false, error: nil)
+		do {
+			try session.setActive(false)
+		} catch _ {
+		}
 		audioRecorder.stop()
 	}
 	
-	func audioRecorderDidFinishRecording(recorder: AVAudioRecorder!, successfully flag: Bool) {
+	func audioRecorderDidFinishRecording(recorder: AVAudioRecorder, successfully flag: Bool) {
 		if flag {
 			recordedAudio = RecordedAudio(filePathUrl: recorder.url, title: recorder.url.lastPathComponent!)
 			// move to next scene
@@ -164,8 +171,8 @@ final class RecordSoundsViewController: UIViewController , AVAudioRecorderDelega
 	/**
 	The action on pressed pause or resume button. The recording process will be paused or resumed respectively. The pause and resume buttons are toggled each other. (exceed specification)
 	
-	:param: sender Pause or resume button
-	:returns: none
+	- parameter sender: Pause or resume button
+	- returns: none
 	*/
 	@IBAction func pauseResumeRecording(sender: UIButton) {
 		if isRecorderPaused {
@@ -186,8 +193,8 @@ final class RecordSoundsViewController: UIViewController , AVAudioRecorderDelega
 	
 	/**
 	Reset UI layout to the initial state. The stop and pause buttons are hidden and record button	becomes enabled. The static text shows the first message.
-	:param: none
-	:returns: none
+	- parameter none:
+	- returns: none
 	*/
 	private func resetLayouts() {
 		stopButton.hidden = true

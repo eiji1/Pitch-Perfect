@@ -16,9 +16,9 @@ final class RecordedAudio :NSObject{
 	/**
 	constructor
 	
-	:param: filePathUrl recorded audio file path as url
-	:param: title recording title
-	:returns: none
+	- parameter filePathUrl: recorded audio file path as url
+	- parameter title: recording title
+	- returns: none
 	*/
 	init(filePathUrl:NSURL, title:String){ // !! Task1
 		self.filePathUrl = filePathUrl

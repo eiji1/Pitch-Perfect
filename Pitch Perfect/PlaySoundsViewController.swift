@@ -30,14 +30,14 @@ final class PlaySoundsViewController: UIViewController {
 
 	// logging function for debugging
 	private func log(message: AnyObject?, line: Int = __LINE__, function :String = __FUNCTION__) {
-		println("At \(line) in \(function), \(message)")
+		print("At \(line) in \(function), \(message)")
 	}
 	
 	/**
 	Setter for RecordedAudio instance
 	
-	:param: audio received audio data
-	:returns: none
+	- parameter audio: received audio data
+	- returns: none
 	*/
 	final func setRecordedAudio(audio:RecordedAudio) {
 		receivedAudio = audio
@@ -51,11 +51,11 @@ final class PlaySoundsViewController: UIViewController {
 		
 		//!! Task 2: legacy code has been removed.
 		
-		audioPlayer = AVAudioPlayer(contentsOfURL: receivedAudio.filePathUrl, error: nil)
+		audioPlayer = try? AVAudioPlayer(contentsOfURL: receivedAudio.filePathUrl)
 		audioPlayer.enableRate = true
 		
 		audioEngine = AVAudioEngine()
-		audioFile = AVAudioFile(forReading: receivedAudio.filePathUrl, error: nil)
+		audioFile = try? AVAudioFile(forReading: receivedAudio.filePathUrl)
 	}
 
 	override func viewWillDisappear(animated: Bool) {
@@ -78,8 +78,8 @@ final class PlaySoundsViewController: UIViewController {
 	/**
 	The action from Fast play button. The playback rate is larger than normal case.
 	
-	:param: sender the originaly pushed button
-	:returns: none
+	- parameter sender: the originaly pushed button
+	- returns: none
 	*/
 	@IBAction func playFastSound(sender: UIButton) {
 		stopAudioPlayers()
@@ -90,8 +90,8 @@ final class PlaySoundsViewController: UIViewController {
 	/**
 	The action from Slow play button. The playback rate is smaller than normal case.
 	
-	:param: sender the originaly pushed button
-	:returns: none
+	- parameter sender: the originaly pushed button
+	- returns: none
 	*/
 	@IBAction func playSlowSound(sender: UIButton) {
 		stopAudioPlayers()
@@ -102,11 +102,11 @@ final class PlaySoundsViewController: UIViewController {
 	/**
 	The action from Chipmunk effect button. It makes high pitch sound from originally recorded audio data.
 	
-	:param: sender the originaly pushed button
-	:returns: none
+	- parameter sender: the originaly pushed button
+	- returns: none
 	*/
 	@IBAction func playChipmunkAudio(sender: UIButton) {
-		var changePitchEffect = AVAudioUnitTimePitch()
+		let changePitchEffect = AVAudioUnitTimePitch()
 		// set high pitch value in cents, where semitone corresponds to 100 cents
 		changePitchEffect.pitch = 1000.0
 		playSoundsWithAudioEffects(changePitchEffect)
@@ -115,11 +115,11 @@ final class PlaySoundsViewController: UIViewController {
 	/**
 	The action from Chipmunk effect button. It makes low pitch sound from originally recorded audio data.
 	
-	:param: sender the originaly pushed button
-	:returns: none
+	- parameter sender: the originaly pushed button
+	- returns: none
 	*/
 	@IBAction func playDarthvaderAudio(sender: UIButton) {
-		var changePitchEffect = AVAudioUnitTimePitch()
+		let changePitchEffect = AVAudioUnitTimePitch()
 		// set low pitch value in cents, where semitone corresponds to 100 cents
 		changePitchEffect.pitch = -1000.0
 		playSoundsWithAudioEffects(changePitchEffect)
@@ -129,13 +129,13 @@ final class PlaySoundsViewController: UIViewController {
 	/**
 	The action on pressed reverb button. This method performs reverb effect to the recorded audio data. (exceed specification)
 	
-	:param: sender the originaly pushed button
-	:returns: none
+	- parameter sender: the originaly pushed button
+	- returns: none
 	*/
 	@IBAction func playReverbSounds(sender: UIButton) {
 		// reverb effect
-		var reverb = AVAudioUnitReverb()
-		var preset = AVAudioUnitReverbPreset.LargeHall
+		let reverb = AVAudioUnitReverb()
+		let preset = AVAudioUnitReverbPreset.LargeHall
 		reverb.loadFactoryPreset(preset)
 		reverb.wetDryMix = 50
 		
@@ -145,12 +145,12 @@ final class PlaySoundsViewController: UIViewController {
 	/**
 	The action on pressed echo button. This method performs echo/delay effect to the recorded audio data. (exceed specification)
 	
-	:param: sender the originaly pushed button
-	:returns: none
+	- parameter sender: the originaly pushed button
+	- returns: none
 	*/
 	@IBAction func playEchoSounds(sender: UIButton) {
 		// delay effect
-		var delay = AVAudioUnitDelay()
+		let delay = AVAudioUnitDelay()
 		delay.delayTime = 0.5
 		delay.feedback = 60
 		delay.wetDryMix = 50
@@ -161,15 +161,15 @@ final class PlaySoundsViewController: UIViewController {
 	/**
 	This method performs specified effect to the recorded audio data.
 	
-	:param: filter The additional audio effect
-	:returns: none
+	- parameter filter: The additional audio effect
+	- returns: none
 	*/
 	private func playSoundsWithAudioEffects(effect:AVAudioUnit) {
 		stopAudioPlayers()
 		audioEngine.reset()
 		
 		// create audio processing nodes
-		var audioPlayerNode = AVAudioPlayerNode()
+		let audioPlayerNode = AVAudioPlayerNode()
 		// register audio processing nodes to the engine
 		audioEngine.attachNode(audioPlayerNode)
 		audioEngine.attachNode(effect)
@@ -180,7 +180,10 @@ final class PlaySoundsViewController: UIViewController {
 		
 		// load audio data from given audio file
 		audioPlayerNode.scheduleFile(audioFile, atTime: nil, completionHandler: nil)
-		audioEngine.startAndReturnError(nil)
+		do {
+			try audioEngine.start()
+		} catch _ {
+		}
 		
 		audioPlayerNode.play()
 	}
@@ -188,8 +191,8 @@ final class PlaySoundsViewController: UIViewController {
 	/**
 	The action on pressed stop button. This method stops playing current audio data.
 	
-	:param: pitch specified pitch value shifted from original height
-	:returns: none
+	- parameter pitch: specified pitch value shifted from original height
+	- returns: none
 	*/
 	@IBAction func stopSound(sender: AnyObject) {
 		stopAudioPlayers()
@@ -198,8 +201,8 @@ final class PlaySoundsViewController: UIViewController {
 	/**
 	Actually stopping both of audio recorder and audio engine. Next audio play is available after called this method and stopped current audio play.
 	
-	:param: none
-	:returns: none
+	- parameter none:
+	- returns: none
 	*/
 	private func stopAudioPlayers()
 	{
